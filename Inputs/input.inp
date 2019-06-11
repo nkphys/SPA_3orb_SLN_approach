@@ -1,0 +1,57 @@
+Perform_ED=1
+PBC=true
+Xsite=4
+Ysite=4
+TwistedBoundaryCond_mx=0
+TwistedBoundaryCond_my=0
+TBC_cellsX=32
+TBC_cellsY=32
+Fill=0.5
+RandomSeed=10
+
+Pnictides_Hopping=false
+Nearest_Neigh_Hopping_t2g_basis_row0=0.5 0.0 0.0
+Nearest_Neigh_Hopping_t2g_basis_row1=0.0 0.5 0.0
+Nearest_Neigh_Hopping_t2g_basis_row2=0.0 0.0 0.5
+
+Crystal_Field_t2g=0.0 0.0 0.0
+
+RandomDisorderSeed=40
+Disorder_Strength=0
+
+J_HUND=1.0
+U_Onsite=4.0
+Lambda_SOC=0.0
+
+
+Cooling=1
+Temperature_min=0.01
+Temperature_max=0.2
+dTemperature=0.01
+
+Temperature=0.2
+
+
+Metropolis_Algo=1
+MaxMCsweeps=4000
+Last_n_sweeps_for_measurement=100
+Measurement_after_each_m_sweeps=10
+
+SavingMicroscopicStates=0
+NoOfMicroscopicStates=2
+
+S_moment_max=2.0
+S_moment_min=0.0
+L_moment_max=2.0
+L_moment_min=0.0
+Rho_max=8.0
+Rho_min=0.0
+
+Cluster_lx=4
+Cluster_ly=4
+
+
+Use_Saddle_point_Approx_on_density=0
+Use_constant_local_Rho_den=1
+Read_Auxilliary_fields=0
+Auxilliary_fields_Seed_file_name=ThetaPhi_Temp5.0MicroState0.txt
