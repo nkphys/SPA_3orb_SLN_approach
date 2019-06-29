@@ -53,7 +53,7 @@ void MCEngine::RUN_MC(){
     int MC_sweeps_used_for_Avg=Parameters_.Last_n_sweeps_for_measurement;
     int Gap_bw_sweeps = Parameters_.Measurement_after_each_m_sweeps;
 
-    double Prev_Classical_E,Curr_Classical_E,P_new,P12,muu_prev;
+    double Prev_Classical_E,Curr_Classical_E,P_new,P12, Prob_,muu_prev;
     double muu_prevCluster;
     double Prev_QuantE;
     double Curr_QuantE;
@@ -187,8 +187,6 @@ void MCEngine::RUN_MC(){
 
             for(int i=0;i<ns_;i++) {  // For each site
 
-               // for(int Field_type=0;Field_type<5;Field_type++){
-
 
                 //***Before change*************//
 
@@ -239,9 +237,7 @@ void MCEngine::RUN_MC(){
 
                 }
 
-
                 //*******************************//
-
 
                 x=Coordinates_.indx(i);
                 y=Coordinates_.indy(i);
@@ -262,7 +258,6 @@ void MCEngine::RUN_MC(){
 
 
                 MFParams_.FieldThrow(i, local_density_);
-                // MFParams_.FieldThrow(i, local_density_, Field_type);
                 Curr_Classical_E = Hamiltonian_.GetCLEnergy();
 
                 if(Parameters_.J_Hund !=0.0 || Parameters_.U_onsite!=0.0){
@@ -286,20 +281,20 @@ void MCEngine::RUN_MC(){
                   P12 = log (P)
                   */
 
-                //same mu-refrence is used, otherwise engine does not work properly
+                //same mu-refrence is used, otherwise engine does not work properly?
                 if(Parameters_.J_Hund !=0.0 || Parameters_.U_onsite!=0.0){
                     P_new = ProbCluster(muu_prevCluster, Parameters_.mus_Cluster);
+                   // P_new = ProbCluster(muu_prevCluster, muu_prevCluster);
                 }
                 else{
                     P_new = 0.0;
                 }
                 P12 = P_new - Parameters_.beta*((Curr_Classical_E)-(Prev_Classical_E));
-                //P12 = - Parameters_.beta*((CurrE)-(PrevE));
                 //cout<<P12<<endl;
                 P12 += log ((sin(MFParams_.Stheta(x,y))/sin(saved_Params[Stheta_])));
                 P12 += log ((sin(MFParams_.Ltheta(x,y))/sin(saved_Params[Ltheta_])));
 
-
+                Prob_ = exp(P12);
 
                 //---OR---
                 //P12 = exp(-Parameters_.beta*((CurrE+Curr_QuantE)-(PrevE+Prev_QuantE)));
@@ -307,16 +302,13 @@ void MCEngine::RUN_MC(){
 
                 //Heat bath algorithm [See page-129 of Prof. Elbio's Book]
                 //Heat bath algorithm works for small changes i.e. when P12~1.0
-                //  if (Heat_Bath_Algo){
-                //     P12 =P12/(1.0+P12);
-                //  }
+                //Heat_Bath_Algo-----
+                 // Prob_ =Prob_/(1.0+Prob_);
+                //-----------------
 
-
-                //Metropolis Algotithm
-                // if (Metropolis_Algo){
-                //    P12=min(1.0,P12);
-                // }
-
+                //Metropolis Algotithm--
+                 Prob_=min(1.0,Prob_);
+                //---------------------
 
 
 
@@ -325,10 +317,8 @@ void MCEngine::RUN_MC(){
        * Random number < P12 -----> ACCEPT
        * Random number > P12 -----> REJECT
        */
-
-
                 //ACCEPTED
-                if(P12 > 0){
+              if ( Prob_ > MFParams_.random() ) {
                     Parameters_.AccCount[0]++;
                     act=1;
                     if(ED_){
@@ -337,20 +327,7 @@ void MCEngine::RUN_MC(){
                         Hamiltonian_.copy_eigs_Cluster(1);
                         muu_prevCluster=Parameters_.mus_Cluster;
                     }
-
                 }
-                else if ( exp(P12) > ( 1.0 - MFParams_.random() ) ) {
-                    Parameters_.AccCount[0]++;
-                    act=1;
-                    if(ED_){
-                        Prev_Classical_E=Curr_Classical_E;
-                        Prev_QuantECluster = Curr_QuantECluster;
-                        Hamiltonian_.copy_eigs_Cluster(1);
-                        muu_prevCluster=Parameters_.mus_Cluster;
-                    }
-
-                }
-
                 //REJECTED
                 else{
                     Parameters_.AccCount[1]++;
@@ -365,10 +342,6 @@ void MCEngine::RUN_MC(){
                     MFParams_.Rho_den(x,y).imag(saved_Params[Rho_den_imag_]);
                 }
 
-
-
-
-            //}//Field_type
             }// site loop
 
 
@@ -376,6 +349,10 @@ void MCEngine::RUN_MC(){
                 MFParams_.Adjust_MCWindow();
             }
 
+
+
+
+            //No Measurement performed
             if(count < (Parameters_.IterMax - (Gap_bw_sweeps*(MC_sweeps_used_for_Avg - 1) + MC_sweeps_used_for_Avg)) ){
                 if ( (count%10==0) ) {
 
@@ -386,26 +363,8 @@ void MCEngine::RUN_MC(){
                                      <<setw(16)<< Curr_QuantECluster<<setw(15)<<Parameters_.mus_Cluster<< endl;
                 }
             }
-            //Average and Std. deviation is calculated is done
+            //Measurement performed after every "Gap_bw_sweeps"
             else{
-
-                //IF TCA is used, Diagonalize the Full system for measurement
-                if(!ED_){
-                    if(Parameters_.J_Hund !=0.0 || Parameters_.U_onsite!=0.0){
-                    Parameters_.Dflag = 'V';
-                    Hamiltonian_.InteractionsCreate();
-                    Hamiltonian_.Diagonalize(Parameters_.Dflag);
-                    Parameters_.mus=Hamiltonian_.chemicalpotential(muu_prevCluster,Parameters_.Fill);
-                    Parameters_.Dflag = 'N';
-                    }
-               }
-                else{
-                    Hamiltonian_.eigs_ = Hamiltonian_.eigsCluster_;
-                    Hamiltonian_.Ham_ = Hamiltonian_.HamCluster_;
-                    Parameters_.mus = Parameters_.mus_Cluster;
-                }
-
-
 
                 if(measure_start==0){
                     measure_start++;
@@ -440,6 +399,22 @@ void MCEngine::RUN_MC(){
                                                             setw(15)<<MFParams_.Rho_den(ix,iy).real()<<setw(15)<<MFParams_.Rho_den(ix,iy).imag()<<endl;
                             }}
 
+                    }
+
+                    //IF TCA is used, Diagonalize the Full system for measurement
+                    if(!ED_){
+                        if(Parameters_.J_Hund !=0.0 || Parameters_.U_onsite!=0.0){
+                        Parameters_.Dflag = 'V';
+                        Hamiltonian_.InteractionsCreate();
+                        Hamiltonian_.Diagonalize(Parameters_.Dflag);
+                        Parameters_.mus=Hamiltonian_.chemicalpotential(muu_prevCluster,Parameters_.Fill);
+                        Parameters_.Dflag = 'N';
+                        }
+                   }
+                    else{
+                        Hamiltonian_.eigs_ = Hamiltonian_.eigsCluster_;
+                        Hamiltonian_.Ham_ = Hamiltonian_.HamCluster_;
+                        Parameters_.mus = Parameters_.mus_Cluster;
                     }
 
 
@@ -485,7 +460,7 @@ void MCEngine::RUN_MC(){
             }
 
 
-        }// Iter Loop
+        }// count Loop [single sweep over lattice]
         file_out_progress << "Total "<<Confs_used<< " configurations were used were measurement"<<endl;
 
         temp_ = temp_ - Parameters_.d_Temp;

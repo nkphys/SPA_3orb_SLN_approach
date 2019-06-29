@@ -1,13 +1,13 @@
-Perform_ED=0
+Perform_ED=1
 PBC=true
-Xsite=6
-Ysite=6
+Xsite=4
+Ysite=4
 TwistedBoundaryCond_mx=0
 TwistedBoundaryCond_my=0
 TBC_cellsX=32
 TBC_cellsY=32
 Fill=0.5
-RandomSeed=10
+RandomSeed=101
 
 Pnictides_Hopping=false
 Nearest_Neigh_Hopping_t2g_basis_row0=0.5 0.0 0.0
@@ -19,32 +19,32 @@ Crystal_Field_t2g=0.0 0.0 0.0
 RandomDisorderSeed=40
 Disorder_Strength=0
 
-J_HUND=1.0
-U_Onsite=4.0
+J_HUND=2.0
+U_Onsite=0.0
 Lambda_SOC=0.0
 
 
-Cooling=0
-Temperature_min=0.01
-Temperature_max=0.2
+Cooling=1
+Temperature_min=0.05
+Temperature_max=0.4
 dTemperature=0.01
 
-Temperature=0.4
+Temperature=0.2
 
 
 Metropolis_Algo=1
 MaxMCsweeps=4000
-Last_n_sweeps_for_measurement=100
+Last_n_sweeps_for_measurement=10
 Measurement_after_each_m_sweeps=10
 
 SavingMicroscopicStates=0
 NoOfMicroscopicStates=2
 
-S_moment_max=2.0
-S_moment_min=0.0
-L_moment_max=2.0
+S_moment_max=1.0
+S_moment_min=1.0
+L_moment_max=0.0
 L_moment_min=0.0
-Rho_max=8.0
+Rho_max=0.0
 Rho_min=0.0
 
 Cluster_lx=4

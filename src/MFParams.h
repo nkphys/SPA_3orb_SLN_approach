@@ -57,9 +57,13 @@ void MFParams::Adjust_MCWindow(){
     Parameters_.AccCount[1]=0;
     Parameters_.WindowSize *= abs(1.0 + 1.0*(ratio-0.5));
 
-    if(Parameters_.WindowSize < 0.1){
-        Parameters_.WindowSize =0.2;
+    if(ratio < 0.01){
+       // Parameters_.WindowSize = 0.5;
     }
+
+   Parameters_.WindowSize = min(0.5, Parameters_.WindowSize);
+   Parameters_.WindowSize = max(0.05, Parameters_.WindowSize);
+
     //Parameters_.WindowSize = 1.0;
     cout << "Ratio: " << ratio << "  window size:  "<<Parameters_.WindowSize<< endl;
     return;
@@ -108,10 +112,14 @@ void MFParams::FieldThrow(int site, double density_at_site){
     }
 
     //Moment sizes
-    S_moment_size(a,b) += (Parameters_.S_moment_max - Parameters_.S_moment_min)*
-            (random()-0.5)*MC_Window;
-    L_moment_size(a,b) += (Parameters_.L_moment_max - Parameters_.L_moment_min)*
-            (random()-0.5)*MC_Window;
+    S_moment_size(a,b) += (random()-0.5)*MC_Window;//(Parameters_.S_moment_max - Parameters_.S_moment_min)*
+    S_moment_size(a,b) = min(abs(S_moment_size(a,b)), Parameters_.S_moment_max );
+    S_moment_size(a,b) = max(abs(S_moment_size(a,b)), Parameters_.S_moment_min );
+
+
+    L_moment_size(a,b) += (random()-0.5)*MC_Window;//(Parameters_.L_moment_max - Parameters_.L_moment_min)*
+    L_moment_size(a,b) = min(abs(L_moment_size(a,b)), Parameters_.L_moment_max );
+    L_moment_size(a,b) = max(abs(L_moment_size(a,b)), Parameters_.L_moment_min );
 
     //Rho
     if(Parameters_.Use_Saddle_point_Approx_on_density){

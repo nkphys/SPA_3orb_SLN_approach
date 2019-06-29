@@ -563,15 +563,15 @@ void Observables::Fields_SiSj_LiLj()
             site_ = Coordinates_.Nc(i, j);
             ei = MFParams_.Stheta(i, j);
             ai = MFParams_.Sphi(i, j);
-            sx_[site_] = MFParams_.S_moment_size(i, j) * cos(ai) * sin(ei);
-            sy_[site_] = MFParams_.S_moment_size(i, j) * sin(ai) * sin(ei);
-            sz_[site_] = MFParams_.S_moment_size(i, j) * cos(ei);
+            sx_[site_] = MFParams_.S_moment_size(i, j)*cos(ai) * sin(ei); //*MFParams_.S_moment_size(i, j)* ;
+            sy_[site_] = MFParams_.S_moment_size(i, j)*sin(ai) * sin(ei);
+            sz_[site_] = MFParams_.S_moment_size(i, j)*cos(ei);
 
-            ei_L = MFParams_.Stheta(i, j);
-            ai_L = MFParams_.Sphi(i, j);
-            Lx_[site_] = MFParams_.L_moment_size(i, j) * cos(ai_L) * sin(ei_L);
-            Ly_[site_] = MFParams_.L_moment_size(i, j) * sin(ai_L) * sin(ei_L);
-            Lz_[site_] = MFParams_.L_moment_size(i, j) * cos(ei_L);
+            ei_L = MFParams_.Ltheta(i, j);
+            ai_L = MFParams_.Lphi(i, j);
+            Lx_[site_] = MFParams_.L_moment_size(i, j) *cos(ai_L) * sin(ei_L);//MFParams_.L_moment_size(i, j) *
+            Ly_[site_] = MFParams_.L_moment_size(i, j) *sin(ai_L) * sin(ei_L);
+            Lz_[site_] = MFParams_.L_moment_size(i, j) *cos(ei_L);
         }
     }
 
