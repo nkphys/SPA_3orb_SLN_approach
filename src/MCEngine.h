@@ -404,11 +404,11 @@ void MCEngine::RUN_MC(){
                     //IF TCA is used, Diagonalize the Full system for measurement
                     if(!ED_){
                         if(Parameters_.J_Hund !=0.0 || Parameters_.U_onsite!=0.0){
-                        Parameters_.Dflag = 'V';
-                        Hamiltonian_.InteractionsCreate();
-                        Hamiltonian_.Diagonalize(Parameters_.Dflag);
-                        Parameters_.mus=Hamiltonian_.chemicalpotential(muu_prevCluster,Parameters_.Fill);
-                        Parameters_.Dflag = 'N';
+                       // Parameters_.Dflag = 'V';
+                       // Hamiltonian_.InteractionsCreate();
+                       // Hamiltonian_.Diagonalize(Parameters_.Dflag);
+                       // Parameters_.mus=Hamiltonian_.chemicalpotential(muu_prevCluster,Parameters_.Fill);
+                       // Parameters_.Dflag = 'N';
                         }
                    }
                     else{
