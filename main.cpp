@@ -94,20 +94,148 @@ int main(int argc, char *argv[]) {
             }
             cout<<"Auxilliary fields are read from "<<Parameters_.Auxilliary_fields_Seed_file_name<<endl;
 
-            Parameters_.Dflag = 'V';
-            Hamiltonian_.InteractionsCreate();
-            Hamiltonian_.Diagonalize(Parameters_.Dflag);
-            double initial_mu_guess;
-            int n_states_occupied_zeroT;
-            n_states_occupied_zeroT=Parameters_.ns*Parameters_.Fill*Parameters_.orbs*2.0;
-            initial_mu_guess=0.5*(Hamiltonian_.eigs_[n_states_occupied_zeroT-1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
-            Parameters_.mus=Hamiltonian_.chemicalpotential(initial_mu_guess,Parameters_.Fill);
 
-            Observables_.Calculate_Single_Particle_Density_Matrix();
-            Observables_.Calculate_two_point_correlations();
-            Observables_.Calculate_2_point_Structure_factors();
 
-            Observables_.Calculate_Nw_t2g();
+
+
+
+            for(int microstate_no=0;microstate_no<Parameters_.No_Of_Microscopic_States;microstate_no++){
+
+                string DOFS_input = Parameters_.Auxilliary_fields_Seed_file_name + to_string(microstate_no) + ".txt";
+                MFParams_.Read_classical_DOFs(DOFS_input);
+                Parameters_.Dflag = 'V';
+                Hamiltonian_.InteractionsCreate();
+                Hamiltonian_.Diagonalize(Parameters_.Dflag);
+                double initial_mu_guess;
+                int n_states_occupied_zeroT;
+                n_states_occupied_zeroT=Parameters_.ns*Parameters_.Fill*Parameters_.orbs*2.0;
+                initial_mu_guess=0.5*(Hamiltonian_.eigs_[n_states_occupied_zeroT-1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
+                Parameters_.mus=Hamiltonian_.chemicalpotential(initial_mu_guess,Parameters_.Fill);
+
+
+
+
+                Observables_.Calculate_Single_Particle_Density_Matrix();
+                Observables_.Calculate_two_point_correlations();
+                Observables_.Calculate_2_point_Structure_factors();
+                Observables_.Calculate_Nw_t2g();
+
+
+                Observables_.Two_point_structure_factors_Average();
+                Observables_.Nw_t2g_Average();
+
+
+            }
+
+
+
+            char temp_char[50];
+            sprintf(temp_char,"%.4f",Parameters_.Temperature);
+
+
+
+
+            //Average Nw_t2g------------------------------------------------//
+            //---------------------------------------------------------------//
+            string file_Nw_avg = "Thermal_Avg_Nw_t2g_Temp"+ string(temp_char) +".txt";
+            ofstream file_Nw_avg_out(file_Nw_avg.c_str());
+            file_Nw_avg_out<<"#(w-mu)     yz_up    xz_up      xy_up     ";
+            file_Nw_avg_out<<"yz_dn    xz_dn      xy_dn   std_deviations....."<<endl;
+
+            for(int i=0;i<Observables_.Thermal_avg_Nw_t2g[0].size();i++){
+                file_Nw_avg_out<<Parameters_.w_min + (i*Parameters_.dw_dos);
+                for(int type=0;type<6;type++){
+                    file_Nw_avg_out<<"      "<< (Observables_.Thermal_avg_Nw_t2g[type][i])/(1.0*Parameters_.No_Of_Microscopic_States);
+                }
+                for(int type=0;type<6;type++){
+
+                    file_Nw_avg_out<<"      "<<sqrt(
+                                         (
+                                             (   (Observables_.Thermal_avg_Nw_t2g_sqr[type][i])/(1.0*Parameters_.No_Of_Microscopic_States)    ) -
+                                             ((Observables_.Thermal_avg_Nw_t2g[type][i]*Observables_.Thermal_avg_Nw_t2g[type][i] )/
+                                              (Parameters_.No_Of_Microscopic_States*Parameters_.No_Of_Microscopic_States*1.0) )
+                                             )
+                                         );
+
+                }
+                file_Nw_avg_out<<endl;
+            }
+            //---------------------------------------------------------------//
+            //---------------------------------------------------------------//
+
+
+
+            //Avr_structure_factors--------------------------------------------//
+            //---------------------------------------------------------------//
+            string file_Sq_Lq_avg = "Thermal_Avg_Sq_Lq_Temp"+ string(temp_char) +".txt";
+            ofstream file_Sq_Lq_avg_out(file_Sq_Lq_avg.c_str());
+            file_Sq_Lq_avg_out<<"#qx   qy     S(q)   L(q)   std_dev(Sq)   std_dev(Lq)"<<endl;
+
+            for(int qx=0;qx<Parameters_.lx;qx++){
+
+                for(int qy=0;qy<Parameters_.ly;qy++){
+
+                    file_Sq_Lq_avg_out<<qx<<"     "<<qy<<"      ";
+                    file_Sq_Lq_avg_out<<(Observables_.SiSjQ_Mean(qx,qy)/(1.0*Parameters_.No_Of_Microscopic_States)).real()<<"       ";
+                    file_Sq_Lq_avg_out<<(Observables_.LiLjQ_Mean(qx,qy)/(1.0*Parameters_.No_Of_Microscopic_States)).real()<<"       ";
+
+
+                    file_Sq_Lq_avg_out<<
+                                         sqrt(
+                                             (
+                                                 ((Observables_.SiSjQ_square_Mean(qx,qy))/(1.0*Parameters_.No_Of_Microscopic_States))
+                                                 -
+                                                 ((Observables_.SiSjQ_Mean(qx,qy)*Observables_.SiSjQ_Mean(qx,qy) )/
+                                                  (Parameters_.No_Of_Microscopic_States*Parameters_.No_Of_Microscopic_States*1.0) )
+                                                 ).real()
+                                             )<<"       ";
+
+                    file_Sq_Lq_avg_out<<
+                                         sqrt(
+                                             (
+                                                 ((Observables_.LiLjQ_square_Mean(qx,qy))/(1.0*Parameters_.No_Of_Microscopic_States))
+                                                 -
+                                                 ((Observables_.LiLjQ_Mean(qx,qy)*Observables_.LiLjQ_Mean(qx,qy) )/
+                                                  (Parameters_.No_Of_Microscopic_States*Parameters_.No_Of_Microscopic_States*1.0) )
+                                                 ).real()
+                                             )<<endl;
+
+                }
+
+                file_Sq_Lq_avg_out<<endl;
+            }
+
+
+
+            file_Sq_Lq_avg_out<<"# Avg_S2 and std.dev = "<<Observables_.Thermal_Avg_local_S2/(1.0*Parameters_.No_Of_Microscopic_States)<<"     ";
+            file_Sq_Lq_avg_out<<sqrt(
+                                    (
+                                        ((Observables_.Thermal_Avg_local_S2_sqr)/(1.0*Parameters_.No_Of_Microscopic_States))
+                                        -
+                                        ((Observables_.Thermal_Avg_local_S2*Observables_.Thermal_Avg_local_S2 )/
+                                         (Parameters_.No_Of_Microscopic_States*Parameters_.No_Of_Microscopic_States*1.0) )
+                                        )
+                                    )
+                              <<endl;
+
+            file_Sq_Lq_avg_out<<"# Avg_L2 and std.dev = "<<Observables_.Thermal_Avg_local_L2/(1.0*Parameters_.No_Of_Microscopic_States)<<"     ";
+            file_Sq_Lq_avg_out<<sqrt(
+                                    (
+                                        ((Observables_.Thermal_Avg_local_L2_sqr)/(1.0*Parameters_.No_Of_Microscopic_States))
+                                        -
+                                        ((Observables_.Thermal_Avg_local_L2*Observables_.Thermal_Avg_local_L2 )/
+                                         (Parameters_.No_Of_Microscopic_States*Parameters_.No_Of_Microscopic_States*1.0) )
+                                        )
+                                    )
+                              <<endl;
+
+            //---------------------------------------------------------------//
+            //---------------------------------------------------------------//
+
+
+
+
+
 
         }
 

@@ -48,6 +48,7 @@ public:
     bool Saving_Microscopic_States;
     int No_Of_Microscopic_States;
 
+
     double temp_max, beta_min;
     double temp_min, beta_max;
     double d_Temp;

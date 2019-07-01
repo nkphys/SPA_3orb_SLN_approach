@@ -21,8 +21,8 @@ Crystal_Field_t2g=0.0 0.0 0.0
 RandomDisorderSeed=40
 Disorder_Strength=0
 
-J_HUND=0.25
-U_Onsite=1.0
+J_HUND=2.0
+U_Onsite=8.0
 Lambda_SOC=0.0
 
 dw_dos=0.005
@@ -58,5 +58,5 @@ Rho_min=0.0
 Use_Saddle_point_Approx_on_density=0
 Use_constant_local_Rho_den=1
 Read_Auxilliary_fields=1
-Auxilliary_fields_Seed_file_name=Fields_Temp0.0050MicroState0.txt
-Tag_output_files_with=Temp0.0050MicroState0
+Auxilliary_fields_Seed_file_name=Fields_Temp0.0050MicroState
+Tag_output_files_with=Not_used

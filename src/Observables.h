@@ -53,6 +53,7 @@ public:
     double Lorentzian(double x, double brd);
     void Fields_SiSj_LiLj();
     void Fields_Two_point_Average();
+    void Nw_t2g_Average();
 
 
     //Quantum ObservablesXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -68,6 +69,9 @@ public:
     complex<double> LiLjQ_square_Mean(int i, int j);
     complex<double> LiLj_Mean(int i, int j);
     complex<double> LiLj_square_Mean(int i, int j);
+    Mat_2_doub Nw_t2g;
+    Mat_2_doub Thermal_avg_Nw_t2g;
+    Mat_2_doub Thermal_avg_Nw_t2g_sqr;
 
     Matrix<complex<double>> SiSjQ_, SiSjQ_Mean_, SiSjQ_square_Mean_;
     Matrix<complex<double>> SiSj_, SiSj_Mean_, SiSj_square_Mean_;
@@ -88,6 +92,8 @@ public:
 
     double AVG_Total_Energy, AVG_Total_Energy_sqr;
     double Avg_local_L2, Avg_local_S2;
+    double Thermal_Avg_local_L2, Thermal_Avg_local_S2;
+    double Thermal_Avg_local_L2_sqr, Thermal_Avg_local_S2_sqr;
 
 
 
@@ -182,6 +188,21 @@ void Observables::Initialize(){
         Local_density_Mean_[i]=zero;
         Local_density_square_Mean_[i]=zero;
     }
+
+    Thermal_Avg_local_L2=0.0;
+    Thermal_Avg_local_S2=0.0;
+    Thermal_Avg_local_L2_sqr=0.0;
+    Thermal_Avg_local_S2_sqr=0.0;
+
+    Thermal_avg_Nw_t2g.resize(6);
+    Thermal_avg_Nw_t2g_sqr.resize(6);
+
+    int omega_index_size = int( (Parameters_.w_max - Parameters_.w_min)/(Parameters_.dw_dos) );
+    for(int i=0;i<6;i++){
+     Thermal_avg_Nw_t2g[i].resize(omega_index_size);
+     Thermal_avg_Nw_t2g_sqr[i].resize(omega_index_size);
+    }
+
 
 
 
@@ -404,6 +425,9 @@ void Observables::Calculate_Akw_t2g(){
 
 void Observables::Calculate_Nw_t2g(){
 
+
+    Nw_t2g.resize(6);
+
     //---------Read from input file-----------------------//
     double omega_min, omega_max, d_omega;
     double eta = Parameters_.eta_dos;
@@ -415,7 +439,9 @@ void Observables::Calculate_Nw_t2g(){
     int c1;
     int omega_index_max = int( (omega_max - omega_min)/(d_omega) );
     double temp_val;
-
+    for(int i=0;i<6;i++){
+    Nw_t2g[i].resize(omega_index_max);
+    }
 
     //---------------------------------------------------------------------------------//
     //************************************Nw_jm****************************************//
@@ -460,15 +486,15 @@ void Observables::Calculate_Nw_t2g(){
     //************************************Nw_jm****************************************//
     //---------------------------------------------------------------------------------//
 
-
+/*
     string fileout_t2g="Nw_t2g_" + Parameters_.Tag_output_files_with +   ".txt";
     ofstream file_Nw_out_t2g(fileout_t2g.c_str());
-
     file_Nw_out_t2g<<"#(w-mu)    yz_up    xz_up      xy_up     ";
     file_Nw_out_t2g<<"yz_dn    xz_dn      xy_dn"<<endl;
+    */
 
     for(int omega_ind=0;omega_ind<omega_index_max;omega_ind++){
-        file_Nw_out_t2g<<omega_min + (omega_ind*d_omega)<<"       ";
+       // file_Nw_out_t2g<<omega_min + (omega_ind*d_omega)<<"       ";
 
 
         for(int t2g_type=0;t2g_type<6;t2g_type++){
@@ -484,12 +510,15 @@ void Observables::Calculate_Nw_t2g(){
                 }
 
             }
-            file_Nw_out_t2g<<temp_val<<"      ";
+
+            Nw_t2g[t2g_type][omega_ind]=temp_val;
+           // file_Nw_out_t2g<<temp_val<<"      ";
         }
-        file_Nw_out_t2g<<endl;
+
+       // file_Nw_out_t2g<<endl;
     }
 
-    file_Nw_out_t2g<<"#actual mu = "<< Parameters_.mus<<", but shifted to 0"<<endl;
+   // file_Nw_out_t2g<<"#actual mu = "<< Parameters_.mus<<", but shifted to 0"<<endl;
 
     //---------------------------------------------------------------------------------//
     //*********************************************************************************//
@@ -499,6 +528,7 @@ void Observables::Calculate_Nw_t2g(){
 
 
 
+    /*
     int n_chosen=Parameters_.Total_Particles - 1;
     file_Nw_out_t2g<<"#Gap = "<<Hamiltonian_.eigs_[n_chosen+1] - Hamiltonian_.eigs_[n_chosen]<<endl;
 
@@ -509,6 +539,7 @@ void Observables::Calculate_Nw_t2g(){
     for(int n=0;n<Hamiltonian_.Ham_.n_row();n++){
         file_Eigen_out<<n<<"\t"<<Hamiltonian_.eigs_[n]<<"\t"<<(1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0)) <<endl;
     }
+    */
 
 
 }
@@ -662,6 +693,8 @@ void Observables::Calculate_Single_Particle_Density_Matrix(){
       NOTE:
       SP_Density_Matrix[alpha][beta] = <c_{alpha^{daggger}} c_{beta}>
      */
+
+
     SP_Density_Matrix.resize(ns_*6);
     for(int i=0;i<ns_*6;i++){
         SP_Density_Matrix[i].resize(ns_*6);
@@ -929,10 +962,11 @@ void Observables::Calculate_2_point_Structure_factors(){
     int xr, yr;
     double phase, Cos_ij, Sin_ij;
 
+   /*
     string Sq_Lq_out = "Sq_Lq_" + Parameters_.Tag_output_files_with + ".txt";
     ofstream file_Sq_Lq_out(Sq_Lq_out.c_str());
-
     file_Sq_Lq_out<<"#qx      qy     S(qx,qy)     L(qx,qy)"<<endl;
+   */
 
     for(int qx=0; qx<lx_; qx++) {
         for(int qy=0; qy<ly_; qy++) {
@@ -957,9 +991,9 @@ void Observables::Calculate_2_point_Structure_factors(){
             SiSjQ_(qx,qy)*= double(1.0/(lx_*ly_*lx_*ly_));
             LiLjQ_(qx,qy)*= double(1.0/(lx_*ly_*lx_*ly_));
 
-            file_Sq_Lq_out << qx << "     "<< qy<< "     "<<  SiSjQ_(qx,qy).real() << "      "<<LiLjQ_(qx,qy).real()<<endl;
+            //file_Sq_Lq_out << qx << "     "<< qy<< "     "<<  SiSjQ_(qx,qy).real() << "      "<<LiLjQ_(qx,qy).real()<<endl;
         }
-        file_Sq_Lq_out <<endl;
+        //file_Sq_Lq_out <<endl;
     }
 
 
@@ -972,8 +1006,10 @@ void Observables::Calculate_2_point_Structure_factors(){
     Avg_local_L2 = Avg_local_L2/(1.0*ns_);
     Avg_local_S2 = Avg_local_S2/(1.0*ns_);
 
+    /*
     file_Sq_Lq_out<<"# Avg_local_S2 = "<<Avg_local_S2<<endl;
     file_Sq_Lq_out<<"# Avg_local_L2 = "<<Avg_local_L2<<endl;
+    */
 
 }
 
@@ -1004,7 +1040,27 @@ void Observables::Two_point_structure_factors_Average(){
         }
     }
 
+    Thermal_Avg_local_S2  +=  Avg_local_S2;
+    Thermal_Avg_local_L2  +=  Avg_local_L2;
+    Thermal_Avg_local_S2_sqr  +=  Avg_local_S2*Avg_local_S2;
+    Thermal_Avg_local_L2_sqr  +=  Avg_local_L2*Avg_local_L2;
+
 } // ----------
+
+void  Observables::Nw_t2g_Average(){
+
+    int omega_index_size = int( (Parameters_.w_max - Parameters_.w_min)/(Parameters_.dw_dos) );
+
+
+    for(int type=0;type<6;type++){
+        for(int i=0;i<omega_index_size;i++){
+            Thermal_avg_Nw_t2g[type][i] += Nw_t2g[type][i];
+            Thermal_avg_Nw_t2g_sqr[type][i] += Nw_t2g[type][i]*Nw_t2g[type][i];
+        }
+    }
+
+
+}
 
 void Observables::Total_Energy_Average(double Curr_QuantE, double CurrE){
 

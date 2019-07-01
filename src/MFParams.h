@@ -321,6 +321,8 @@ void MFParams::Calculate_Fields_Avg(){
 
 void MFParams::Read_classical_DOFs(string filename){
 
+
+    cout <<"File read for auxilliary fields : "<<filename<<endl;
     string tmp_str;
     int temp_lx, temp_ly;
     double temp_rho_real, temp_rho_imag;
