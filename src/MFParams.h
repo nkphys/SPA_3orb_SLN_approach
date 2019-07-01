@@ -322,25 +322,21 @@ void MFParams::Calculate_Fields_Avg(){
 void MFParams::Read_classical_DOFs(string filename){
 
     string tmp_str;
-    int temp_lx, temp_ly, temp_site;
+    int temp_lx, temp_ly;
     double temp_rho_real, temp_rho_imag;
 
     ifstream fl_in(filename.c_str());
     getline(fl_in, tmp_str);
 
+    for(int i=0;i<lx_;i++){
     for(int j=0;j<ly_;j++){
-        for(int i=0;i<lx_;i++){
 
-            fl_in>>temp_lx>>temp_ly>>temp_site>>S_moment_size(i,j)>>Stheta(i,j)>>Sphi(i,j)>>
-                                                                    L_moment_size(i,j)>>Ltheta(i,j)>>Lphi(i,j)>>temp_rho_real>>temp_rho_imag;
+            fl_in>>temp_lx>>temp_ly>>Stheta(i,j)>>Sphi(i,j)>>S_moment_size(i,j)>>
+                  Ltheta(i,j)>>Lphi(i,j)>>L_moment_size(i,j)>>temp_rho_real>>temp_rho_imag;
             Rho_den(i,j)=complex<double>(temp_rho_real,temp_rho_imag);
 
-            assert(temp_lx==i);
-            assert(temp_ly==j);
-            assert( temp_site==i+(j*lx_) );
         }
     }
-
 
 } // ----------
 

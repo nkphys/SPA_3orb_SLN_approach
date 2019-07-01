@@ -32,10 +32,15 @@ STRIP_COMMAND = true #### Keeps lines in the executable for debugging
 $(EXENAME): clean main.o 
 	$(CXX) $(CPPFLAGS) -o $(EXENAME)  main.o $(LDFLAGS) 
 	$(STRIP_COMMAND) $(EXENAME)
+	cp $(EXENAME) observables
 
-all: $(EXENAME)
+all: 	$(EXENAME) 
+	cp $(EXENAME) observables
 	 
 clean:
-	rm -f $(EXENAME) *.o
+	rm -f $(EXENAME) observables *.o
+
+observables : $(EXENAME)
+	cp $(EXENAME) observables
 
 ######## End of Makefile ########

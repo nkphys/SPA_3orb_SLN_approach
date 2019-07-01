@@ -467,17 +467,17 @@ void MCEngine::RUN_MC(){
 
         //Writing Auxilliary fields for present temperature:
         //File_Out_Theta_Phi
-        File_Out_Theta_Phi<<"# lx    ly    site   S_moment_size   Stheta    Sphi   L_moment_size  Ltheta   Lphi   rho_real    rho_imag"<<endl;
-        for(int j=0;j<ly_;j++){
-            for(int i=0;i<lx_;i++){
-
-               File_Out_Theta_Phi<<i<<"   "<<j<<"   "<<i+(j*lx_)<<"   "<<MFParams_.S_moment_size(i,j)<<"   "<<
-                                   MFParams_.Stheta(i,j)<<"   "<<MFParams_.Sphi(i,j)<<"   "<<MFParams_.L_moment_size(i,j)<<"   "
-                                <<MFParams_.Ltheta(i,j)<<"   "<<MFParams_.Lphi(i,j)<<"   "
-                               <<MFParams_.Rho_den(i,j).real()<<"   "<<MFParams_.Rho_den(i,j).imag()<<endl;
-            }
-
-        }
+         File_Out_Theta_Phi<<"#x"<<setw(15)<<"y"<<setw(15)<<"STheta(x,y)"<<setw(15)<<"SPhi(x,y)"<<
+                                    setw(15)<<"S_Moment_Size(x,y)"<<setw(15)<<"LTheta(x,y)"<<setw(15)<<"LPhi(x,y)"<<
+                                    setw(15)<<"L_Moment_Size(x,y)"<<setw(15)<<"Rho_den(x,y).real"<<
+                                    setw(15)<<"Rho_den(x,y).imag"<<endl;
+        for(int ix=0;ix<lx_;ix++){
+            for(int iy =0;iy<ly_;iy++){
+                File_Out_Theta_Phi<<ix<<setw(15)<<iy<<setw(15)<<MFParams_.Stheta(ix,iy)<<setw(15)<<MFParams_.Sphi(ix,iy)<<
+                                            setw(15)<<MFParams_.S_moment_size(ix,iy)<<setw(15)<<MFParams_.Ltheta(ix,iy)<<
+                                            setw(15)<<MFParams_.Lphi(ix,iy)<<setw(15)<<MFParams_.L_moment_size(ix,iy)<<
+                                            setw(15)<<MFParams_.Rho_den(ix,iy).real()<<setw(15)<<MFParams_.Rho_den(ix,iy).imag()<<endl;
+            }}
 
        // MFParams_.Read_classical_DOFs(File_Out_theta_phi);
     }//Temperature loop

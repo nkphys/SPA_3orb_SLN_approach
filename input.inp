@@ -21,23 +21,28 @@ Crystal_Field_t2g=0.0 0.0 0.0
 RandomDisorderSeed=40
 Disorder_Strength=0
 
-J_HUND=1.0
-U_Onsite=4.0
+J_HUND=0.25
+U_Onsite=1.0
 Lambda_SOC=0.0
 
+dw_dos=0.005
+eta_dos=0.05
+w_min=-5.0
+w_max=5.0
 
-Cooling=1
+
+Cooling=0
 Temperature_min=0.05
 Temperature_max=0.3
 dTemperature=0.01
 
-Temperature=0.2
+Temperature=0.0050
 
 
 Metropolis_Algo=1
-MaxMCsweeps=4000
-Last_n_sweeps_for_measurement=10
-Measurement_after_each_m_sweeps=10
+MaxMCsweeps=40
+Last_n_sweeps_for_measurement=2
+Measurement_after_each_m_sweeps=2
 
 SavingMicroscopicStates=1
 NoOfMicroscopicStates=10
@@ -52,5 +57,6 @@ Rho_min=0.0
 
 Use_Saddle_point_Approx_on_density=0
 Use_constant_local_Rho_den=1
-Read_Auxilliary_fields=0
-Auxilliary_fields_Seed_file_name=ThetaPhi_Temp5.0MicroState0.txt
+Read_Auxilliary_fields=1
+Auxilliary_fields_Seed_file_name=Fields_Temp0.0050MicroState0.txt
+Tag_output_files_with=Temp0.0050MicroState0

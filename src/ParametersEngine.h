@@ -17,6 +17,9 @@ public:
     double U_onsite;
     double Lambda_SOC;
     string Auxilliary_fields_Seed_file_name;
+    string Tag_output_files_with;
+    double dw_dos, eta_dos,  w_min, w_max;
+
 
     double Disorder_Strength, RandomDisorderSeed;
     bool PBC;
@@ -101,6 +104,10 @@ void Parameters::Initialize(string inputfile_){
     L_moment_min = matchstring(inputfile_,"L_moment_min");
     Rho_max = matchstring(inputfile_,"Rho_max");
     Rho_min = matchstring(inputfile_,"Rho_min");
+    dw_dos = matchstring(inputfile_,"dw_dos");
+    eta_dos = matchstring(inputfile_,"eta_dos");
+    w_min = matchstring(inputfile_,"w_min");
+    w_max = matchstring(inputfile_,"w_max");
 
 
     Dflag = 'N';
@@ -191,6 +198,7 @@ void Parameters::Initialize(string inputfile_){
     }
 
     Auxilliary_fields_Seed_file_name=matchstring2(inputfile_,"Auxilliary_fields_Seed_file_name");
+    Tag_output_files_with=matchstring2(inputfile_,"Tag_output_files_with");
 
     Use_Saddle_point_Approx_on_density_double=double(matchstring(inputfile_,"Use_Saddle_point_Approx_on_density"));
     if(Use_Saddle_point_Approx_on_density_double==1.0){

@@ -23,6 +23,11 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     if (argc<2) { throw std::invalid_argument("USE:: executable inputfile"); }
+    string ex_string_original =argv[0];
+    cout<<"Executable used : "<<ex_string_original<<endl;
+    string ex_string;
+    ex_string=ex_string_original.substr (ex_string_original.length() - 3);
+
     string inputfile = argv[1];
 
     bool check_Non_Int=false;
@@ -36,7 +41,7 @@ int main(int argc, char *argv[]) {
 
 
     mt19937_64 Generator_(Parameters_.RandomSeed); //for random fields
-   // mt19937_64 Generator2_(Parameters_.RandomDisorderSeed); //for random disorder
+    // mt19937_64 Generator2_(Parameters_.RandomDisorderSeed); //for random disorder
 
 
     MFParams MFParams_(Parameters_,Coordinates_,Generator_);
@@ -76,10 +81,35 @@ int main(int argc, char *argv[]) {
 
     else{
 
-        cout<<setprecision(9);
-        Observables_.Initialize();
-        MCEngine MCEngine_(Parameters_,Coordinates_,MFParams_,Hamiltonian_,Observables_);
-        MCEngine_.RUN_MC();
+        if(ex_string=="SPA"){
+            cout<<setprecision(9);
+            Observables_.Initialize();
+            MCEngine MCEngine_(Parameters_,Coordinates_,MFParams_,Hamiltonian_,Observables_);
+            MCEngine_.RUN_MC();
+        }
+        else if (ex_string=="les"){
+            if(!Parameters_.Read_Auxilliary_fields){
+                cout<<"Read_Auxilliary_fields must be true"<<endl;
+                assert(Parameters_.Read_Auxilliary_fields);
+            }
+            cout<<"Auxilliary fields are read from "<<Parameters_.Auxilliary_fields_Seed_file_name<<endl;
+
+            Parameters_.Dflag = 'V';
+            Hamiltonian_.InteractionsCreate();
+            Hamiltonian_.Diagonalize(Parameters_.Dflag);
+            double initial_mu_guess;
+            int n_states_occupied_zeroT;
+            n_states_occupied_zeroT=Parameters_.ns*Parameters_.Fill*Parameters_.orbs*2.0;
+            initial_mu_guess=0.5*(Hamiltonian_.eigs_[n_states_occupied_zeroT-1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
+            Parameters_.mus=Hamiltonian_.chemicalpotential(initial_mu_guess,Parameters_.Fill);
+
+            Observables_.Calculate_Single_Particle_Density_Matrix();
+            Observables_.Calculate_two_point_correlations();
+            Observables_.Calculate_2_point_Structure_factors();
+
+            Observables_.Calculate_Nw_t2g();
+
+        }
 
     }
 

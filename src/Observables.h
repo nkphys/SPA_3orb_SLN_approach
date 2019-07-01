@@ -87,6 +87,7 @@ public:
 
 
     double AVG_Total_Energy, AVG_Total_Energy_sqr;
+    double Avg_local_L2, Avg_local_S2;
 
 
 
@@ -316,35 +317,35 @@ void Observables::Calculate_Akw_t2g(){
         assert(Parameters_.lx!=1);
         assert(Parameters_.ly!=1);
 
-    //--------\Gamma to X-----------------
-    ky_i=0;
-    for(kx_i=0;kx_i<=(Parameters_.lx/2);kx_i++){
-        temp_pair.first = kx_i;
-        temp_pair.second = ky_i;
-        k_path.push_back(temp_pair);
-    }
-    //----------------------------------
+        //--------\Gamma to X-----------------
+        ky_i=0;
+        for(kx_i=0;kx_i<=(Parameters_.lx/2);kx_i++){
+            temp_pair.first = kx_i;
+            temp_pair.second = ky_i;
+            k_path.push_back(temp_pair);
+        }
+        //----------------------------------
 
-    //--------X to M-----------------
-    kx_i=(Parameters_.lx/2);
-    for(ky_i=1;ky_i<=(Parameters_.lx/2);ky_i++){
-        temp_pair.first = kx_i;
-        temp_pair.second = ky_i;
-        k_path.push_back(temp_pair);
-    }
-    //----------------------------------
+        //--------X to M-----------------
+        kx_i=(Parameters_.lx/2);
+        for(ky_i=1;ky_i<=(Parameters_.lx/2);ky_i++){
+            temp_pair.first = kx_i;
+            temp_pair.second = ky_i;
+            k_path.push_back(temp_pair);
+        }
+        //----------------------------------
 
-    //--------M to \Gamma[with one extra point,
-    //                  because in gnuplor use "set pm3d corners2color c1"
-    //                  ]-----------------
-    kx_i=(Parameters_.lx/2) - 1;
-    ky_i=(Parameters_.lx/2) - 1;
-    for(kx_i=(Parameters_.lx/2) - 1;kx_i>=-1;kx_i--){
-        temp_pair.first = kx_i;
-        temp_pair.second = kx_i;
-        k_path.push_back(temp_pair);
-    }
-    //----------------------------------
+        //--------M to \Gamma[with one extra point,
+        //                  because in gnuplor use "set pm3d corners2color c1"
+        //                  ]-----------------
+        kx_i=(Parameters_.lx/2) - 1;
+        ky_i=(Parameters_.lx/2) - 1;
+        for(kx_i=(Parameters_.lx/2) - 1;kx_i>=-1;kx_i--){
+            temp_pair.first = kx_i;
+            temp_pair.second = kx_i;
+            k_path.push_back(temp_pair);
+        }
+        //----------------------------------
 
 
     }
@@ -405,13 +406,15 @@ void Observables::Calculate_Nw_t2g(){
 
     //---------Read from input file-----------------------//
     double omega_min, omega_max, d_omega;
-    double eta = 0.05;
-    omega_min=Hamiltonian_.eigs_[0]-0.5-Parameters_.mus;omega_max=Hamiltonian_.eigs_[6*ns_ - 1]+0.5-Parameters_.mus;d_omega=0.005;
+    double eta = Parameters_.eta_dos;
+    omega_min= Parameters_.w_min;
+    omega_max= Parameters_.w_max;
+    d_omega=Parameters_.dw_dos;
     //---------------------------------------------------//
 
     int c1;
     int omega_index_max = int( (omega_max - omega_min)/(d_omega) );
-    double temp_val ;
+    double temp_val;
 
 
     //---------------------------------------------------------------------------------//
@@ -457,9 +460,8 @@ void Observables::Calculate_Nw_t2g(){
     //************************************Nw_jm****************************************//
     //---------------------------------------------------------------------------------//
 
-    int c2;
 
-    string fileout_t2g="Nw_t2g.txt";
+    string fileout_t2g="Nw_t2g_" + Parameters_.Tag_output_files_with +   ".txt";
     ofstream file_Nw_out_t2g(fileout_t2g.c_str());
 
     file_Nw_out_t2g<<"#(w-mu)    yz_up    xz_up      xy_up     ";
@@ -498,11 +500,12 @@ void Observables::Calculate_Nw_t2g(){
 
 
     int n_chosen=Parameters_.Total_Particles - 1;
-    cout<<"Gap = "<<Hamiltonian_.eigs_[n_chosen+1] - Hamiltonian_.eigs_[n_chosen]<<endl;
+    file_Nw_out_t2g<<"#Gap = "<<Hamiltonian_.eigs_[n_chosen+1] - Hamiltonian_.eigs_[n_chosen]<<endl;
 
-    string fileout_Eigen="Eigen_spectrum.txt";
+    string fileout_Eigen="Eigen_spectrum_"  + Parameters_.Tag_output_files_with + ".txt";
     ofstream file_Eigen_out(fileout_Eigen.c_str());
 
+    file_Eigen_out<<"#n  E[n]   Fermi[n]"<<endl;
     for(int n=0;n<Hamiltonian_.Ham_.n_row();n++){
         file_Eigen_out<<n<<"\t"<<Hamiltonian_.eigs_[n]<<"\t"<<(1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0)) <<endl;
     }
@@ -809,21 +812,21 @@ void Observables::Calculate_two_point_correlations(){
     assert(opr_type[_M_Total_y]=="M_Total_y");
     for(int ir=0;ir<6;ir++){
         for(int ic=0;ic<6;ic++){
-           Oprs_[_Jz_eff][ir][ic]=Oprs_[_Sz][ir][ic] - Oprs_[_Lz][ir][ic];
-           Oprs_[_Jx_eff][ir][ic]=Oprs_[_Sx][ir][ic] - Oprs_[_Lx][ir][ic];
-           Oprs_[_Jy_eff][ir][ic]=Oprs_[_Sy][ir][ic] - Oprs_[_Ly][ir][ic];
-           Oprs_[_M_Total_z][ir][ic]=2.0*Oprs_[_Sz][ir][ic] + Oprs_[_Lz][ir][ic];
-           Oprs_[_M_Total_x][ir][ic]=2.0*Oprs_[_Sx][ir][ic] + Oprs_[_Lx][ir][ic];
-           Oprs_[_M_Total_y][ir][ic]=2.0*Oprs_[_Sy][ir][ic] + Oprs_[_Ly][ir][ic];
+            Oprs_[_Jz_eff][ir][ic]=Oprs_[_Sz][ir][ic] - Oprs_[_Lz][ir][ic];
+            Oprs_[_Jx_eff][ir][ic]=Oprs_[_Sx][ir][ic] - Oprs_[_Lx][ir][ic];
+            Oprs_[_Jy_eff][ir][ic]=Oprs_[_Sy][ir][ic] - Oprs_[_Ly][ir][ic];
+            Oprs_[_M_Total_z][ir][ic]=2.0*Oprs_[_Sz][ir][ic] + Oprs_[_Lz][ir][ic];
+            Oprs_[_M_Total_x][ir][ic]=2.0*Oprs_[_Sx][ir][ic] + Oprs_[_Lx][ir][ic];
+            Oprs_[_M_Total_y][ir][ic]=2.0*Oprs_[_Sy][ir][ic] + Oprs_[_Ly][ir][ic];
         }
     }
 
 
 
 
-    string corrs_out = "corrs.txt";
-    ofstream file_corrs_out(corrs_out.c_str());
-    file_corrs_out<<"#site_i   site_i(x)    site_i(y)    site_j   site_j(x)    site_j(y)     SS[site_i][site_j]     LL[site_i][site_j]     JeffJeff[site_i][site_j]     MM[site_i][site_j]"<<endl;
+    //  string corrs_out = "corrs_" + Parameters_.Tag_output_files_with + ".txt";
+    //  ofstream file_corrs_out(corrs_out.c_str());
+    //  file_corrs_out<<"#site_i   site_i(x)    site_i(y)    site_j   site_j(x)    site_j(y)     SS[site_i][site_j]     LL[site_i][site_j]     JeffJeff[site_i][site_j]     MM[site_i][site_j]"<<endl;
 
     int i1,i2,j1,j2;
 
@@ -870,6 +873,7 @@ void Observables::Calculate_two_point_correlations(){
                                 }
                             }
 
+                            /*
                             //J_eff.J_eff
                             for(int comp=_Jz_eff;comp<_Jy_eff+1;comp++){
                                 if( (Oprs_[comp][i_row][i_col] !=zero_complex)
@@ -897,6 +901,7 @@ void Observables::Calculate_two_point_correlations(){
                                             Two_particle_Den_Mat(i1,i2,j1,j2);
                                 }
                             }
+                            */
 
                         }
                     }
@@ -904,11 +909,11 @@ void Observables::Calculate_two_point_correlations(){
             }
             SiSj_(i,j)=temp_val_SS;
             LiLj_(i,j)=temp_val_LL;
-          //  file_corrs_out<<i<<setw(15)<<Coordinates_.indx(i)<<setw(15)<<Coordinates_.indy(i)<<setw(15)<<j<<setw(15)<<Coordinates_.indx(j)<<setw(15)<<Coordinates_.indy(j)<<
-          //                  setw(15)<<temp_val_SS.real()<<//"\t"<<temp_val_SS.imag()<<
-          //                  setw(15)<<temp_val_LL.real()<<//"\t"<<temp_val_LL.imag()<<
-          //                  setw(15)<<temp_val_JeffJeff.real()<<//"\t"<<temp_val_JeffJeff.imag()<<
-          //                  setw(15)<<temp_val_MM.real()<<endl;//"\t"<<temp_val_MM.imag()<<endl;
+            //  file_corrs_out<<i<<setw(15)<<Coordinates_.indx(i)<<setw(15)<<Coordinates_.indy(i)<<setw(15)<<j<<setw(15)<<Coordinates_.indx(j)<<setw(15)<<Coordinates_.indy(j)<<
+            //                  setw(15)<<temp_val_SS.real()<<//"\t"<<temp_val_SS.imag()<<
+            //                  setw(15)<<temp_val_LL.real()<<//"\t"<<temp_val_LL.imag()<<
+            //                  setw(15)<<temp_val_JeffJeff.real()<<//"\t"<<temp_val_JeffJeff.imag()<<
+            //                  setw(15)<<temp_val_MM.real()<<endl;//"\t"<<temp_val_MM.imag()<<endl;
 
         }
     }
@@ -923,6 +928,11 @@ void Observables::Calculate_2_point_Structure_factors(){
     int ix, iy, jx, jy;
     int xr, yr;
     double phase, Cos_ij, Sin_ij;
+
+    string Sq_Lq_out = "Sq_Lq_" + Parameters_.Tag_output_files_with + ".txt";
+    ofstream file_Sq_Lq_out(Sq_Lq_out.c_str());
+
+    file_Sq_Lq_out<<"#qx      qy     S(qx,qy)     L(qx,qy)"<<endl;
 
     for(int qx=0; qx<lx_; qx++) {
         for(int qy=0; qy<ly_; qy++) {
@@ -946,9 +956,24 @@ void Observables::Calculate_2_point_Structure_factors(){
             }
             SiSjQ_(qx,qy)*= double(1.0/(lx_*ly_*lx_*ly_));
             LiLjQ_(qx,qy)*= double(1.0/(lx_*ly_*lx_*ly_));
-            //cout << qx << " "<< qy<< " "<<  SiSjQ_(qx,qy) << endl;
+
+            file_Sq_Lq_out << qx << "     "<< qy<< "     "<<  SiSjQ_(qx,qy).real() << "      "<<LiLjQ_(qx,qy).real()<<endl;
         }
+        file_Sq_Lq_out <<endl;
     }
+
+
+    Avg_local_L2=0.0;
+    Avg_local_S2=0.0;
+    for(int i=0;i<ns_;i++){
+       Avg_local_L2 +=  LiLj_(i,i).real();
+       Avg_local_S2 +=  SiSj_(i,i).real();
+    }
+    Avg_local_L2 = Avg_local_L2/(1.0*ns_);
+    Avg_local_S2 = Avg_local_S2/(1.0*ns_);
+
+    file_Sq_Lq_out<<"# Avg_local_S2 = "<<Avg_local_S2<<endl;
+    file_Sq_Lq_out<<"# Avg_local_L2 = "<<Avg_local_L2<<endl;
 
 }
 
