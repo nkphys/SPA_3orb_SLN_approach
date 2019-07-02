@@ -60,3 +60,4 @@ Use_constant_local_Rho_den=1
 Read_Auxilliary_fields=1
 Auxilliary_fields_Seed_file_name=Fields_Temp0.0050MicroState
 Tag_output_files_with=Not_used
+Asymmetry_JXY_by_JZ=0.9

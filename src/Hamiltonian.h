@@ -178,30 +178,30 @@ double Hamiltonian::chemicalpotentialCluster(double muin,double filling){
 
 
     if(1==1){
-    for(int i=0;i<50000;i++){
-        n1=0.0;
-        for(int j=0;j<nstate;j++){
-            n1+=double(1.0/( exp( (eigsCluster_[j]-mu_out)*Parameters_.beta ) + 1.0));
-        }
-        //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
-        if(abs(N-n1)<double(0.0001)){
-            //cout<<abs(N-n1)<<endl;
-            converged=true;
-            break;
-        }
-        else {
-            mu_out += (N-n1)*dMubydN;
-            //cout<<i<<"    "<<n1<<"    "<<N-n1<<endl;
+        for(int i=0;i<50000;i++){
+            n1=0.0;
+            for(int j=0;j<nstate;j++){
+                n1+=double(1.0/( exp( (eigsCluster_[j]-mu_out)*Parameters_.beta ) + 1.0));
+            }
+            //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
+            if(abs(N-n1)<double(0.0001)){
+                //cout<<abs(N-n1)<<endl;
+                converged=true;
+                break;
+            }
+            else {
+                mu_out += (N-n1)*dMubydN;
+                //cout<<i<<"    "<<n1<<"    "<<N-n1<<endl;
 
+            }
         }
-    }
 
-    if(!converged){
-        //cout<<"mu_not_converged, N = "<<n1<<endl;
-    }
-    else{
-        //cout<<"mu converged, N = "<<n1<<endl;
-    }
+        if(!converged){
+            //cout<<"mu_not_converged, N = "<<n1<<endl;
+        }
+        else{
+            //cout<<"mu converged, N = "<<n1<<endl;
+        }
 
     }
 
@@ -212,39 +212,39 @@ double Hamiltonian::chemicalpotentialCluster(double muin,double filling){
     if(1==2){
         mu1=eigsCluster_[0];
         mu2=eigsCluster_[nstate-1];
-    for(int i=0;i<40000;i++){
-        n1=0.0;
-        for(int j=0;j<nstate;j++){
-            n1+=double(1.0/( exp( (eigsCluster_[j]-mu_temp)*Parameters_.beta ) + 1.0));
-        }
-        //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
-        if(abs(N-n1)<double(0.0001)){
-            //cout<<abs(N-n1)<<endl;
-            converged=true;
-            break;
-        }
-        else {
-           if(n1 >N){
-               mu2=mu_temp;
-               mu_temp=0.5*(mu1 + mu_temp);
-           }
-           else{
-               mu1=mu_temp;
-               mu_temp=0.5*(mu2 + mu_temp);
-           }
+        for(int i=0;i<40000;i++){
+            n1=0.0;
+            for(int j=0;j<nstate;j++){
+                n1+=double(1.0/( exp( (eigsCluster_[j]-mu_temp)*Parameters_.beta ) + 1.0));
+            }
+            //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
+            if(abs(N-n1)<double(0.0001)){
+                //cout<<abs(N-n1)<<endl;
+                converged=true;
+                break;
+            }
+            else {
+                if(n1 >N){
+                    mu2=mu_temp;
+                    mu_temp=0.5*(mu1 + mu_temp);
+                }
+                else{
+                    mu1=mu_temp;
+                    mu_temp=0.5*(mu2 + mu_temp);
+                }
 
+            }
+            //cout<<"mu_temp = "<<mu_temp<<"   "<<n1<<endl;
         }
-        //cout<<"mu_temp = "<<mu_temp<<"   "<<n1<<endl;
-    }
 
-    if(!converged){
-        //cout<<"mu_not_converged, N = "<<n1<<endl;
-    }
-    else{
-        //cout<<"mu converged, N = "<<n1<<endl;
-    }
+        if(!converged){
+            //cout<<"mu_not_converged, N = "<<n1<<endl;
+        }
+        else{
+            //cout<<"mu converged, N = "<<n1<<endl;
+        }
 
-    mu_out = mu_temp;
+        mu_out = mu_temp;
     }
 
     return mu_out;
@@ -353,15 +353,17 @@ double Hamiltonian::GetCLEnergy(){
                        abs(MFParams_.Rho_den(site_x,site_y))*abs(MFParams_.Rho_den(site_x,site_y))  )
                 +
                 (2.0*Parameters_.J_Hund*
-                 ((Mz_*Mz_)+
-                 (Mx_*Mx_)+
-                 (My_*My_))
+                 (
+                     (Mz_*Mz_)+
+                     Parameters_.Asymmetry_JXY_by_JZ*((Mx_*Mx_)+
+                                                      (My_*My_))
+                     )
                  )
                 +
                 (0.5*Parameters_.J_Hund*
                  ((Tau_z_*Tau_z_)+
-                 (Tau_x_*Tau_x_)+
-                 (Tau_y_*Tau_y_))
+                  Parameters_.Asymmetry_JXY_by_JZ*(Tau_x_*Tau_x_)+
+                  Parameters_.Asymmetry_JXY_by_JZ*(Tau_y_*Tau_y_))
                  );
 
     }
@@ -436,8 +438,8 @@ void Hamiltonian::InteractionsCreate(){
             col_=Coordinates_.Nc_dof(site,_orb+3*spin_col);
             row_=Coordinates_.Nc_dof(site,_orb+3*spin_row);
             Ham_(row_,col_) +=  -2.0*Parameters_.J_Hund*(
-                        (one_complex*(Mx_))
-                        -(iota_complex*(My_))
+                        (one_complex*(Mx_)*Parameters_.Asymmetry_JXY_by_JZ )
+                        -(iota_complex*(My_)*Parameters_.Asymmetry_JXY_by_JZ)
                         );
             Ham_(col_,row_) = conj(Ham_(row_,col_));
         }
@@ -461,7 +463,7 @@ void Hamiltonian::InteractionsCreate(){
             col_=Coordinates_.Nc_dof(site,orb_col+3*_spin);
             row_=Coordinates_.Nc_dof(site,orb_row+3*_spin);
             Ham_(row_,col_) +=  -1.0*Parameters_.J_Hund*(
-                        (iota_complex*(Tau_x_))
+                        (iota_complex*(Tau_x_)*Parameters_.Asymmetry_JXY_by_JZ)
                         );
             Ham_(col_,row_) = conj(Ham_(row_,col_));
         }
@@ -473,7 +475,7 @@ void Hamiltonian::InteractionsCreate(){
             col_=Coordinates_.Nc_dof(site,orb_col+3*_spin);
             row_=Coordinates_.Nc_dof(site,orb_row+3*_spin);
             Ham_(row_,col_) +=  -1.0*Parameters_.J_Hund*(
-                        (-1.0*iota_complex*(Tau_y_))
+                        (-1.0*iota_complex*(Tau_y_)*Parameters_.Asymmetry_JXY_by_JZ)
                         );
             Ham_(col_,row_) = conj(Ham_(row_,col_));
         }
@@ -549,8 +551,8 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site){
             col_=Coordinates_.Nc_dof(site,_orb+3*spin_col);
             row_=Coordinates_.Nc_dof(site,_orb+3*spin_row);
             HamCluster_(row_,col_) +=  -2.0*Parameters_.J_Hund*(
-                        (one_complex*(Mx_))
-                        -(iota_complex*(My_))
+                        (one_complex*(Mx_)*Parameters_.Asymmetry_JXY_by_JZ)
+                        -(iota_complex*(My_)*Parameters_.Asymmetry_JXY_by_JZ)
                         );
             HamCluster_(col_,row_) = conj(HamCluster_(row_,col_));
         }
@@ -574,7 +576,7 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site){
             col_=Coordinates_.Nc_dof(site,orb_col+3*_spin);
             row_=Coordinates_.Nc_dof(site,orb_row+3*_spin);
             HamCluster_(row_,col_) +=  -1.0*Parameters_.J_Hund*(
-                        (iota_complex*(Tau_x_))
+                        (iota_complex*(Tau_x_)*Parameters_.Asymmetry_JXY_by_JZ)
                         );
             HamCluster_(col_,row_) = conj(HamCluster_(row_,col_));
         }
@@ -586,7 +588,7 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site){
             col_=Coordinates_.Nc_dof(site,orb_col+3*_spin);
             row_=Coordinates_.Nc_dof(site,orb_row+3*_spin);
             HamCluster_(row_,col_) +=  -1.0*Parameters_.J_Hund*(
-                        (-1.0*iota_complex*(Tau_y_))
+                        (-1.0*iota_complex*(Tau_y_)*Parameters_.Asymmetry_JXY_by_JZ)
                         );
             HamCluster_(col_,row_) = conj(HamCluster_(row_,col_));
         }

@@ -20,6 +20,7 @@ public:
     string Tag_output_files_with;
     double dw_dos, eta_dos,  w_min, w_max;
 
+    double Asymmetry_JXY_by_JZ;
 
     double Disorder_Strength, RandomDisorderSeed;
     bool PBC;
@@ -99,6 +100,7 @@ void Parameters::Initialize(string inputfile_){
     J_Hund = matchstring(inputfile_,"J_HUND");
     U_onsite = matchstring(inputfile_,"U_Onsite");
     Lambda_SOC = matchstring(inputfile_, "Lambda_SOC");
+    Asymmetry_JXY_by_JZ=matchstring(inputfile_,"Asymmetry_JXY_by_JZ");
     S_moment_max = matchstring(inputfile_,"S_moment_max");
     S_moment_min = matchstring(inputfile_,"S_moment_min");
     L_moment_max = matchstring(inputfile_,"L_moment_max");
